@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Gastos</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#C6D0D6" />
+<link rel="icon" href="icon-192.png" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<style>
+  :root {
+    --bg: #F4F5F6;
+    --card: #FFFFFF;
+    --border: #E1E5E8;
+    --border-strong: #C7CDD1;
+    --text: #33424A;
+    --text-secondary: #7A868C;
+    --text-muted: #A5ADB1;
+    --accent-bg: #C6D0D6;
+    --accent-text: #33424A;
+    --accent-border: #AEBBC2;
+    --hover: #DCE3E7;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wrap {
+    max-width: 420px;
+    margin: 0 auto;
+    padding: 16px;
+    padding-bottom: 40px;
+  }
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .topbar span { font-size: 16px; font-weight: 600; }
+  .topbar .actions { display: flex; gap: 6px; }
+  button {
+    font-family: inherit;
+    cursor: pointer;
+  }
+  .ghost-btn {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 7px 12px;
+    font-size: 12px;
+    color: var(--text);
+  }
+  .ghost-btn.active { background: var(--accent-bg); border-color: var(--accent-border); }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 6px;
+  }
+  input[type="number"], input[type="text"] {
+    width: 100%;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 10px 12px;
+    font-size: 15px;
+    color: var(--text);
+    background: #fff;
+  }
+  input:focus { outline: none; border-color: var(--accent-border); }
+  .monto-input {
+    font-size: 28px;
+    font-weight: 600;
+    border: none;
+    padding: 4px 0;
+    background: transparent;
+  }
+  .monto-input:focus { outline: none; }
+  .field { margin-bottom: 16px; position: relative; }
+  .combo-list {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: #fff;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 5;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .combo-list div {
+    padding: 10px 12px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .combo-list div:hover { background: var(--hover); }
+  .save-btn {
+    width: 100%;
+    background: var(--accent-bg);
+    color: var(--accent-text);
+    border: 1px solid var(--accent-border);
+    font-size: 15px;
+    font-weight: 600;
+    padding: 13px;
+    border-radius: var(--radius);
+    margin-top: 4px;
+  }
+  .save-btn:active { opacity: 0.8; }
+  .cal-panel {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: #fff;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    padding: 10px;
+    z-index: 6;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  .cal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .cal-header button { background: transparent; border: none; font-size: 16px; padding: 4px 10px; color: var(--text); }
+  .cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; text-align: center; }
+  .cal-grid .daylabel { font-size: 11px; color: var(--text-muted); padding: 4px 0; }
+  .cal-grid .day { font-size: 13px; padding: 7px 0; border-radius: 6px; cursor: pointer; }
+  .cal-grid .day:hover { background: var(--hover); }
+  .cal-grid .today { border: 1px solid var(--accent-border); }
+  .screen { display: none; }
+  .screen.active { display: block; }
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--text);
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+    z-index: 20;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .pending-banner {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-align: center;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- ===== GASTO ===== -->
+  <div id="screen-gasto" class="screen active">
+    <div class="topbar">
+      <span>Nuevo gasto</span>
+      <div class="actions">
+        <button class="ghost-btn" onclick="showScreen('ingreso')">Ingreso</button>
+        <button class="ghost-btn" onclick="showScreen('deuda')">Deuda</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>Monto</label>
+        <input id="g-monto" type="number" inputmode="decimal" placeholder="0" class="monto-input" />
+      </div>
+      <div class="field" id="g-cat-box">
+        <label>Categoría</label>
+        <input id="g-cat-input" type="text" placeholder="Buscar categoría..." autocomplete="off" />
+        <div class="combo-list" id="g-cat-list"></div>
+      </div>
+      <div class="field" id="g-medio-box">
+        <label>Medio de pago</label>
+        <input id="g-medio-input" type="text" placeholder="Buscar medio..." autocomplete="off" />
+        <div class="combo-list" id="g-medio-list"></div>
+      </div>
+      <div class="field">
+        <label>Concepto</label>
+        <input id="g-concepto" type="text" placeholder="Ej. Supermercado, farmacia..." />
+      </div>
+      <div class="field" id="g-date-box">
+        <label>Fecha</label>
+        <input id="g-date-display" type="text" readonly placeholder="Elegir fecha" />
+        <div class="cal-panel" id="g-cal-panel"></div>
+      </div>
+      <button class="save-btn" onclick="guardarGasto()">Guardar gasto</button>
+    </div>
+  </div>
+
+  <!-- ===== INGRESO ===== -->
+  <div id="screen-ingreso" class="screen">
+    <div class="topbar">
+      <span>Nuevo ingreso</span>
+      <button class="ghost-btn" onclick="showScreen('gasto')">← Volver</button>
+    </div>
+    <div class="card">
+      <div class="field">
+        <label>Monto</label>
+        <input id="i-monto" type="number" inputmode="decimal" placeholder="0" class="monto-input" />
+      </div>
+      <div class="field" id="i-cat-box">
+        <label>Categoría</label>
+        <input id="i-cat-input" type="text" placeholder="Buscar categoría..." autocomplete="off" />
+        <div class="combo-list" id="i-cat-list"></div>
+      </div>
+      <div class="field">
+        <label>Concepto</label>
+        <input id="i-concepto" type="text" placeholder="Ej. Sueldo, freelance..." />
+      </div>
+      <div class="field" id="i-date-box">
+        <label>Fecha</label>
+        <input id="i-date-display" type="text" readonly placeholder="Elegir fecha" />
+        <div class="cal-panel" id="i-cal-panel"></div>
+      </div>
+      <button class="save-btn" onclick="guardarIngreso()">Guardar ingreso</button>
+    </div>
+  </div>
+
+  <!-- ===== DEUDA ===== -->
+  <div id="screen-deuda" class="screen">
+    <div class="topbar">
+      <span>Nuevo pago de deuda</span>
+      <button class="ghost-btn" onclick="showScreen('gasto')">← Volver</button>
+    </div>
+    <div class="card">
+      <div class="field" id="d-deuda-box">
+        <label>Deuda</label>
+        <input id="d-deuda-input" type="text" placeholder="Buscar deuda..." autocomplete="off" />
+        <div class="combo-list" id="d-deuda-list"></div>
+      </div>
+      <div class="field">
+        <label>Monto</label>
+        <input id="d-monto" type="number" inputmode="decimal" placeholder="0" class="monto-input" />
+      </div>
+      <div class="field" id="d-date-box">
+        <label>Fecha</label>
+        <input id="d-date-display" type="text" readonly placeholder="Elegir fecha" />
+        <div class="cal-panel" id="d-cal-panel"></div>
+      </div>
+      <button class="save-btn" onclick="guardarDeuda()">Guardar pago</button>
+    </div>
+  </div>
+
+  <div class="pending-banner" id="pending-banner"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
