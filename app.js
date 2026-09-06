@@ -244,12 +244,14 @@ async function guardarIngreso() {
 async function guardarDeuda() {
   const deuda = document.getElementById('d-deuda-input').value;
   const monto = document.getElementById('d-monto').value;
+  const concepto = document.getElementById('d-concepto').value;
   const fecha = isoFrom('d-date-display');
   if (!monto || !deuda) { showToast('Falta deuda o monto'); return; }
 
-  await guardarConCola({ tipo: 'Deuda', deuda, fecha, monto }, 'Pago guardado');
+  await guardarConCola({ tipo: 'Deuda', deuda, fecha, monto, concepto }, 'Pago guardado');
   document.getElementById('d-monto').value = '';
   document.getElementById('d-deuda-input').value = '';
+  document.getElementById('d-concepto').value = '';
   showScreen('gasto');
 }
 
