@@ -2,5 +2,5 @@
 // Pegá acá la URL de tu Apps Script (la que termina en /exec) y el mismo
 // código secreto que pusiste en Code.gs.
 
-const APPS_SCRIPT_URL = "PEGAR_ACA_LA_URL_DEL_APPS_SCRIPT";
-const SECRETO = "PEGAR_ACA_TU_CODIGO_SECRETO";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzSOFXEAK0wy5MALlyWWQJPYI17KTIxQiK3NgW5O8X_Nev1VLhNDLq9zeJ_BosxGdXh/exec";
+const SECRETO = "2503";
