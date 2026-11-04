@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gastos-app-v2';
+const CACHE_NAME = 'gastos-app-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -25,14 +25,22 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Primero la red (así siempre ves la versión nueva); si no hay conexión, lo guardado.
 self.addEventListener('fetch', (event) => {
+  if (event.request.method !== 'GET') return;
   const url = new URL(event.request.url);
-  // no cachear llamadas al Apps Script, solo el shell de la app
+  // no tocar las llamadas al Apps Script, solo el shell de la app
   if (url.origin !== location.origin) return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request).catch(() => cached);
-    })
+    fetch(event.request)
+      .then((res) => {
+        const copy = res.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+        return res;
+      })
+      .catch(() =>
+        caches.match(event.request).then((cached) => cached || caches.match('./index.html'))
+      )
   );
 });
